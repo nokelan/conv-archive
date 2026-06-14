@@ -43,9 +43,15 @@ def get_db():
             created_at TEXT,
             updated_at TEXT,
             slug TEXT,
-            jsonl_path TEXT
+            jsonl_path TEXT,
+            file_mtime REAL
         )
     """)
+    try:
+        db.execute("ALTER TABLE sessions ADD COLUMN file_mtime REAL")
+        db.commit()
+    except sqlite3.OperationalError:
+        pass
     db.execute("""
         CREATE TABLE IF NOT EXISTS messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -165,13 +171,24 @@ def cmd_scan():
     db = get_db()
     pattern = str(JSONL_ROOT / "**" / "*.jsonl")
     files = glob.glob(pattern, recursive=True)
-    total = 0
+    total = skipped = 0
     for f in files:
+        mtime = os.path.getmtime(f)
+        row = db.execute(
+            "SELECT file_mtime FROM sessions WHERE jsonl_path = ?", (f,)
+        ).fetchone()
+        if row and row[0] and abs(row[0] - mtime) < 1.0:
+            skipped += 1
+            continue
         n = import_jsonl(db, f)
         if n > 0:
             print(f"[import] {os.path.basename(f)}: {n}")
             total += n
-    print(f"[done] {len(files)} files, {total} messages")
+        db.execute(
+            "UPDATE sessions SET file_mtime = ? WHERE jsonl_path = ?", (mtime, f)
+        )
+        db.commit()
+    print(f"[done] {len(files)} files ({skipped} skipped), {total} new messages")
     db.close()
 
 
