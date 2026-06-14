@@ -83,17 +83,20 @@ python conv_archive.py --export abc12345-... --date 2026-06-14 > session.txt
 
 `--scan`은 자동으로 실행되지 않습니다. 스케줄러를 설정하면 아카이브가 항상 최신 상태를 유지합니다.
 
+`.jsonl` 파일은 삭제되지 않고 누적되므로 **하루 1회로 충분합니다.**  
+오늘 진행 중인 세션을 바로 검색하고 싶을 때만 수동으로 한 번 더 실행하면 됩니다.
+
 **Mac / Linux (crontab):**
 ```bash
 crontab -e
-# 아래 줄 추가 — 30분마다 실행:
-*/30 * * * * python /path/to/conv_archive.py --scan
+# 아래 줄 추가 — 매일 새벽 2시 실행:
+0 2 * * * python /path/to/conv_archive.py --scan
 ```
 
 **Windows (작업 스케줄러):**
 ```
 1. 작업 스케줄러 열기 → 기본 작업 만들기
-2. 트리거: 매일, 30분마다 반복
+2. 트리거: 매일 오전 2:00
 3. 동작: 프로그램 시작
    프로그램: python
    인수: C:\path\to\conv_archive.py --scan
