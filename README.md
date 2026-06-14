@@ -78,6 +78,32 @@ python conv_archive.py --search "sqlite fts5"
 python conv_archive.py --export abc12345-... --date 2026-06-14 > session.txt
 ```
 
+## Scheduler setup (recommended)
+
+`--scan` doesn't run automatically. Set up a scheduler to keep your archive up to date.
+
+**Mac / Linux (crontab):**
+```bash
+crontab -e
+# add this line — runs every 30 minutes:
+*/30 * * * * python /path/to/conv_archive.py --scan
+```
+
+**Windows (Task Scheduler):**
+```
+1. Open Task Scheduler → Create Basic Task
+2. Trigger: Daily, repeat every 30 minutes
+3. Action: Start a program
+   Program: python
+   Arguments: C:\path\to\conv_archive.py --scan
+4. Save
+```
+
+Or run once manually whenever you want to update:
+```bash
+python conv_archive.py --scan
+```
+
 ## License
 
 MIT
